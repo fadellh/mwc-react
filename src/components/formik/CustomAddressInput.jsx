@@ -66,7 +66,7 @@ const CustomAddressInput = (props) => {
 
 CustomAddressInput.defaultProps = {
   label: '* Shipping Address',
-  placeholder: 'Bandung'
+  placeholder: ''
 };
 
 CustomAddressInput.propTypes = {

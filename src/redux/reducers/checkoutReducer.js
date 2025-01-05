@@ -1,9 +1,12 @@
 import {
-  RESET_CHECKOUT, SET_CHECKOUT_PAYMENT_DETAILS, SET_CHECKOUT_SHIPPING_DETAILS
+  RESET_CHECKOUT, SET_CHECKOUT_PAYMENT_DETAILS, SET_CHECKOUT_SHIPPING_DETAILS, CREATE_ORDER_SUCCESS
 } from '@/constants/constants';
 
 const defaultState = {
   shipping: {},
+  order: {
+    order_id: ''
+  },
   payment: {
     type: 'paypal',
     name: '',
@@ -25,6 +28,11 @@ export default (state = defaultState, action) => {
         ...state,
         payment: action.payload
       };
+    case CREATE_ORDER_SUCCESS:
+      return {
+        ...state,
+        order: action.payload
+      }
     case RESET_CHECKOUT:
       return defaultState;
     default:
