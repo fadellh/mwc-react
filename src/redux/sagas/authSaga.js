@@ -102,6 +102,8 @@ function* authSaga({ type, payload }) {
           dateJoined: ref.user.metadata.creationTime || new Date().getTime()
         };
 
+        console.log('<<< User:', user);
+
         yield call(firebase.addUser, ref.user.uid, user);
         yield put(setProfile(user));
         yield put(setAuthenticating(false));
@@ -141,11 +143,12 @@ function* authSaga({ type, payload }) {
       break;
     }
     case ON_AUTHSTATE_SUCCESS: {
-      const snapshot = yield call(firebase.getUser, payload.uid);
+      // const snapshot = yield call(firebase.getUser, payload.uid);
+      const user = yield call(firebase.getUser, payload.uid);
 
-      if (snapshot.data()) { // if user exists in database
-        const user = snapshot.data();
-
+      // if (snapshot.data()) { // if user exists in database
+        // const user = snapshot.data();
+      if (user) {
         yield put(setProfile(user));
         yield put(setBasketItems(user.basket));
         yield put(setBasketItems(user.basket));
@@ -154,7 +157,8 @@ function* authSaga({ type, payload }) {
           role: user.role,
           provider: payload.providerData[0].providerId
         }));
-      } else if (payload.providerData[0].providerId !== 'password' && !snapshot.data()) {
+      } 
+      else if (payload.providerData[0].providerId !== 'password' && !snapshot.data()) {
         // add the user if auth provider is not password
         const user = {
           fullname: payload.displayName ? payload.displayName : 'User',

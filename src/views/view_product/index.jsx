@@ -73,7 +73,7 @@ const ViewProduct = () => {
             </h3>
           </Link>
           <div className="product-modal">
-            {product.imageCollection.length !== 0 && (
+            {product?.imageCollection ? product.imageCollection.length !== 0 : false && (
               <div className="product-modal-image-collection">
                 {product.imageCollection.map((image) => (
                   <div
@@ -119,13 +119,13 @@ const ViewProduct = () => {
                 />
               </div>
               <br />
-              {product.availableColors.length >= 1 && (
+              {product?.availableColors?.length >= 1 && (
                 <div>
                   <span className="text-subtle">Choose Color</span>
                   <br />
                   <br />
                   <ColorChooser
-                    availableColors={product.availableColors}
+                    availableColors={product?.availableColors}
                     onSelectedColorChange={onSelectedColorChange}
                   />
                 </div>

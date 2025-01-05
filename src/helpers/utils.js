@@ -16,14 +16,27 @@ export const displayDate = (timestamp) => {
 };
 
 export const displayMoney = (n) => {
-  const format = new Intl.NumberFormat('en-US', {
+  // change to integer
+  n = parseInt(n, 10);
+
+  //currency indonesia
+  const format = new Intl.NumberFormat('id-ID', {
     style: 'currency',
-    currency: 'USD'
+    currency: 'IDR',
+    minimumFractionDigits: 0
   });
 
-  // or use toLocaleString()
+
   return format.format(n);
 };
+
+export const getCoordByAddress = (addressArray) => {
+  let location = {};
+  if (Array.isArray(addressArray?.results) && addressArray?.results.length > 0) {
+    location = addressArray?.results[0]?.geometry?.location || {};
+  }
+  return location;
+}
 
 export const calculateTotal = (arr) => {
   if (!arr || arr?.length === 0) return 0;

@@ -3,6 +3,8 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/storage";
 import firebaseConfig from "./config";
+// import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+// import { GoogleAuthProvider } from "firebase/auth"; // Import GoogleAuthProvider
 
 class Firebase {
   constructor() {
@@ -21,8 +23,55 @@ class Firebase {
   signIn = (email, password) =>
     this.auth.signInWithEmailAndPassword(email, password);
 
-  signInWithGoogle = () =>
-    this.auth.signInWithPopup(new app.auth.GoogleAuthProvider());
+  // signInWithGoogle = () =>
+  //   this.auth.signInWithPopup(new app.auth.GoogleAuthProvider());
+
+  signInWithGoogle = async () => {
+    const provider = new app.auth.GoogleAuthProvider(); 
+    try {
+      const result = await this.auth.signInWithPopup(provider);
+
+      // Extract Google Access Token (for accessing Google APIs if needed)
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+
+      // The signed-in user information
+      const user = result.user;
+
+      console.log("Google Access Token:", token);
+      console.log("Signed-in User:", user);
+
+      return { user, token }; 
+    } catch (error) {
+      // Handle errors
+      console.error("Google Sign-In Error:", error.message);
+      throw error; 
+    }
+  };
+
+  // signInWithGoogle = async () => {
+  //   const provider = new app.auth.GoogleAuthProvider();
+  //   const auth = app.auth.getAuth();
+  //   try {
+  //     const result = await this.auth.signInWithPopup(auth, provider);
+  
+  //     // Extract Google Access Token (for accessing Google APIs if needed)
+  //     const credential = GoogleAuthProvider.credentialFromResult(result);
+  //     const token = credential.accessToken;
+  
+  //     // The signed-in user information
+  //     const user = result.user;
+  
+  //     console.log("Google Access Token:", token);
+  //     console.log("Signed-in User:", user);
+  
+  //     return { user, token };
+  //   } catch (error) {
+  //     // Handle errors
+  //     console.error("Google Sign-In Error:", error.message);
+  //     throw error;
+  //   }
+  // };
 
   signInWithFacebook = () =>
     this.auth.signInWithPopup(new app.auth.FacebookAuthProvider());
@@ -34,9 +83,21 @@ class Firebase {
 
   passwordReset = (email) => this.auth.sendPasswordResetEmail(email);
 
-  addUser = (id, user) => this.db.collection("users").doc(id).set(user);
+  // addUser = (id, user) => this.db.collection("users").doc(id).set(user);
 
-  getUser = (id) => this.db.collection("users").doc(id).get();
+  // getUser = (id) => this.db.collection("users").doc(id).get();
+
+  addUser = (id, user) => {
+    // Convert the user object to a JSON string and store it in localStorage
+    localStorage.setItem(`user_${id}`, JSON.stringify(user));
+  };
+  
+  getUser = (id) => {
+    // Retrieve the JSON string from localStorage and parse it back into an object
+    const user = localStorage.getItem(`user_${id}`);
+    console.log("<< User:", user);
+    return user ? JSON.parse(user) : null; // Return the parsed object or null if not found
+  };
 
   passwordUpdate = (password) => this.auth.currentUser.updatePassword(password);
 
