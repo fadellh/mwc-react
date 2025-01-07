@@ -1,0 +1,67 @@
+.order-display {
+  margin: 3rem auto;
+  padding: 2rem;
+  max-width: 600px; // Center align for vertical view
+  background-color: #f8f9fa;
+  border-radius: 12px;
+
+  @include mobile {
+    margin: 1rem;
+    padding: 1rem;
+  }
+}
+
+.order-display-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.order-card {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+  }
+
+  .order-info {
+    text-align: center;
+
+    h4 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      color: #333333;
+    }
+
+    .status {
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      color: #888888;
+
+      &.approved {
+        color: #27ae60; // Green for approved
+      }
+
+      &.review_payment {
+        color: #e67e22; // Orange for review payment
+      }
+    }
+
+    .price {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #2ecc71;
+    }
+  }
+}

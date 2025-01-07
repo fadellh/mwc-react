@@ -71,6 +71,39 @@ const apiService = {
       message: 'Payment uploaded successfully!'
     };
   },
+  getOrders: async (orderId, userId) => {
+    if (config.useDummyCall) {
+      return apiService.getOrdersDummy();
+    }
+    const response = await ORDER_API.get('/v1/orders', {
+      // params: { order_number: orderId }, 
+      headers: {
+        'X-User-Id': userId,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  },
+  getOrdersDummy: async () => {
+    console.log("Get for order");
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1000)); // 2-second delay
+    
+    // Simulate a successful response
+    return [
+      {
+        orderNumber: Math.floor(Math.random() * 100000).toString(), // Random order ID
+        orderStatus: 'APPROVED',
+        totalPrice: 1000000
+      },
+      {
+        orderNumber: Math.floor(Math.random() * 100000).toString(), // Random order ID
+        orderStatus: 'REVIEW_PAYMENT',
+        totalPrice: 2000000
+      },
+  ];
+  },
 };
 
 export default apiService;
