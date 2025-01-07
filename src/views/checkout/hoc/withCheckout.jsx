@@ -11,6 +11,7 @@ const withCheckout = (Component) => withRouter((props) => {
     basket: store.basket,
     shipping: store.checkout.shipping,
     payment: store.checkout.payment,
+    order: store.checkout.order,
     profile: store.profile
   }));
 
@@ -30,6 +31,7 @@ const withCheckout = (Component) => withRouter((props) => {
         payment={state.payment}
         profile={state.profile}
         shipping={state.shipping}
+        order={state.order}
         subtotal={Number(subtotal + shippingFee)}
       />
     );

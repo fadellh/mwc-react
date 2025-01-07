@@ -32,6 +32,7 @@ function* rootSaga() {
   ], profileSaga);
   yield takeLatest([
     ACTION.CREATE_ORDER,
+    ACTION.UPLOAD_PAYMENT
   ], checkoutSaga);
 }
 

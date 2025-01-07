@@ -1,12 +1,12 @@
 import { call, put } from 'redux-saga/effects';
 import { history } from '@/routers/AppRouter';
-import { CREATE_ORDER } from '@/constants/constants';
+import { CREATE_ORDER, UPLOAD_PAYMENT } from '@/constants/constants';
 import { displayActionMessage } from '@/helpers/utils';
 import firebase from '@/services/firebase';
 import api from '@/services/mwcApi';
 import { setLoading } from '../actions/miscActions';
-import { CHECKOUT_STEP_3 } from '@/constants/routes';
-import { createOrderSuccess } from '../actions/checkoutActions';
+import { CHECKOUT_STEP_3, ACCOUNT } from '@/constants/routes';
+import { createOrderSuccess, uploadPaymentSuccess } from '../actions/checkoutActions';
 
 function* checkoutSaga({ type, payload }) {
   switch (type) {
@@ -48,6 +48,32 @@ function* checkoutSaga({ type, payload }) {
         // yield put(checkoutFailure(e.message));
         yield put(setLoading(false));
         yield call(displayActionMessage, 'Order placement failed. Please try again.', 'error');
+      }
+      break;
+    }
+    case UPLOAD_PAYMENT: {
+      try {
+        yield put(setLoading(true));
+        
+        console.log(payload)
+      
+        const formData = new FormData();
+        formData.append('paymentProofFile', payload.paymentProof);
+        formData.append('orderId', payload.orderId);
+        
+        yield call(displayActionMessage, 'Uploading your payment proof...', 'info')
+        const response = yield call(api.uploadPayment, formData);
+
+        yield put(uploadPaymentSuccess({...response, orderId: payload.orderId}));
+
+        yield call(displayActionMessage, 'Uploaded payment proof...', 'success')
+        yield put(setLoading(false));
+        
+        yield call(history.push, ACCOUNT);
+      } catch (e) { 
+        console.log(e.message);
+        yield put(setLoading(false));
+        yield call(displayActionMessage, 'Payment upload failed. Please try again.', 'error');
       }
       break;
     }

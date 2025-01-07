@@ -10,39 +10,89 @@ import { StepTracker } from '../components';
 import withCheckout from '../hoc/withCheckout';
 import CreditPayment from './CreditPayment';
 import PayPalPayment from './PayPalPayment';
+import UploadPayment from './UploadPayment';
 import Total from './Total';
+import useFileHandler from '@/hooks/useFileHandler';
+import { useDispatch } from 'react-redux';
+import { uploadPayment } from '@/redux/actions/checkoutActions';
+
 
 const FormSchema = Yup.object().shape({
-  name: Yup.string()
-    .min(4, 'Name should be at least 4 characters.')
-    .required('Name is required'),
-  cardnumber: Yup.string()
-    .min(13, 'Card number should be 13-19 digits long')
-    .max(19, 'Card number should only be 13-19 digits long')
-    .required('Card number is required.'),
-  expiry: Yup.date()
-    .required('Credit card expiry is required.'),
-  ccv: Yup.string()
-    .min(3, 'CCV length should be 3-4 digit')
-    .max(4, 'CCV length should only be 3-4 digit')
-    .required('CCV is required.'),
-  type: Yup.string().required('Please select paymend mode')
+  type: Yup.string().required('Please select payment mode'),
+  // Conditionally require credit card fields only if user picks 'credit'
+  name: Yup.string().when('type', {
+    is: 'credit',
+    then: Yup.string()
+      .min(4, 'Name should be at least 4 characters.')
+      .required('Name is required'),
+    otherwise: Yup.string().notRequired()
+  }),
+  cardnumber: Yup.string().when('type', {
+    is: 'credit',
+    then: Yup.string()
+      .min(13, 'Card number should be 13-19 digits long')
+      .max(19, 'Card number should only be 13-19 digits long')
+      .required('Card number is required.'),
+    otherwise: Yup.string().notRequired()
+  }),
+  expiry: Yup.string().when('type', {
+    is: 'credit',
+    then: Yup.string().required('Credit card expiry is required.'),
+    otherwise: Yup.string().notRequired()
+  }),
+  ccv: Yup.string().when('type', {
+    is: 'credit',
+    then: Yup.string()
+      .min(3, 'CCV length should be 3-4 digit')
+      .max(4, 'CCV length should only be 3-4 digit')
+      .required('CCV is required.'),
+    otherwise: Yup.string().notRequired()
+  }),
+  // Conditionally require payment proof only if user picks 'upload'
+  paymentProof: Yup.mixed().when('type', {
+    is: 'upload',
+    then: Yup.mixed().required('Please upload your payment proof'),
+    otherwise: Yup.mixed().notRequired()
+  })
+
 });
 
-const Payment = ({ shipping, payment, subtotal }) => {
+const Payment = ({ shipping, payment, subtotal, order }) => {
   useDocumentTitle('Check Out Final Step | MWC');
   useScrollTop();
+  
+  const dispatch = useDispatch();
 
   const initFormikValues = {
     name: payment.name || '',
     cardnumber: payment.cardnumber || '',
     expiry: payment.expiry || '',
     ccv: payment.ccv || '',
-    type: payment.type || 'paypal'
+    type: payment.type || 'paypal',
+    orderId: order.orderId || '',
+    orderStatus: order.status || '',
+    paymentProof: null  // for the file
   };
 
-  const onConfirm = () => {
-    displayActionMessage('Feature not ready yet :)', 'info');
+  const {
+    imageFile,
+    isFileLoading,
+    onFileChange,
+    removeImage
+  } = useFileHandler({ paymentProof: {} })
+
+  const onConfirm = (form) => {
+    if (form.type === 'paypal') {
+      displayActionMessage('PayPal feature not ready yet :)', 'info');
+    } else if (form.type === 'credit') {
+      displayActionMessage('Processing credit card payment...');
+    } else if (form.type === 'upload') {
+      console.log('<<<', form.orderId, form.paymentProof)
+      dispatch(uploadPayment({
+        orderId: form.orderId,
+        paymentProof: form.paymentProof,
+      }))      
+    }
   };
 
   if (!shipping || !shipping.isDone) {
@@ -57,7 +107,7 @@ const Payment = ({ shipping, payment, subtotal }) => {
         validationSchema={FormSchema}
         validate={(form) => {
           if (form.type === 'paypal') {
-            displayActionMessage('Feature not ready yet :)', 'info');
+            // displayActionMessage('Feature not ready yet :)', 'info');
           }
         }}
         onSubmit={onConfirm}
@@ -66,6 +116,12 @@ const Payment = ({ shipping, payment, subtotal }) => {
           <Form className="checkout-step-3">
             <CreditPayment />
             <PayPalPayment />
+            <UploadPayment 
+              imageFile={imageFile}
+              isFileLoading={isFileLoading}
+              onFileChange={onFileChange}
+              removeImage={removeImage}
+            />
             <Total
               isInternational={shipping.isInternational}
               subtotal={subtotal}
@@ -88,6 +144,10 @@ Payment.propTypes = {
     expiry: PropType.string,
     ccv: PropType.string,
     type: PropType.string
+  }).isRequired,
+  order: PropType.shape({
+    orderId: PropType.string,
+    status: PropType.string
   }).isRequired,
   subtotal: PropType.number.isRequired
 };

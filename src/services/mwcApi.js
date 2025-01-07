@@ -1,6 +1,7 @@
 import axios from 'axios';
 import config from "./mwcConfig";
 import { create } from 'yup/lib/Reference';
+import { uploadPayment } from '@/redux/actions/checkoutActions';
 
 // BASE_URL
 const API = axios.create({
@@ -42,11 +43,34 @@ const apiService = {
     
     // Simulate a successful response
     return {
-      orderId: Math.floor(Math.random() * 100000), // Random order ID
+      orderId: Math.floor(Math.random() * 100000).toString(), // Random order ID
       status: 'success',
       message: 'Order created successfully!'
     };
-  }
+  },
+  uploadPayment: async (paymentFormData) => {
+    if (config.useDummyCall) {
+      return apiService.uploadPaymentDummy(paymentFormData);
+    }
+    const response = await ORDER_API.post('/v1/orders/payment', paymentFormData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+  uploadPaymentDummy: async (payment) => {
+    console.log("Payment received:", payment);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 2000)); // 2-second delay
+    
+    // Simulate a successful response
+    return {
+      orderStatus: 'REVIEW_PAYMENT',
+      message: 'Payment uploaded successfully!'
+    };
+  },
 };
 
 export default apiService;

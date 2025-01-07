@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
+    "antd": "^5.22.7",
     "axios": "^1.7.9",
     "firebase": "^8.4.3",
     "formik": "^2.2.6",
