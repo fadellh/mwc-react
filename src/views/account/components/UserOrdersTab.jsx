@@ -1,4 +1,4 @@
-import { OrderList } from '@/components/order';
+import { OrderShowCase } from '@/components/order';
 import React from 'react';
 import {
    useOrderList
@@ -24,9 +24,9 @@ const UserOrdersTab = () => {
             <button onClick={fetchOrderList}>Try Again</button>
           </div>
         ) : isLoadingOrder ? (
-          <OrderList orders={[]} skeletonCount={6} />
+          <OrderShowCase orders={[]} skeletonCount={6} />
         ) : orders.length > 0 ? (
-          <OrderList orders={orders} skeletonCount={6} />
+          <OrderShowCase orders={orders} skeletonCount={6} />
         ) : (
           <strong>
             <span className="text-subtle">You don&apos;t have any orders</span>
