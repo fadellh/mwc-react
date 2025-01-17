@@ -23,10 +23,6 @@ jobs:
     runs-on: [react-runner]
     steps:
       - uses: actions/checkout@v3
-      - id: "auth"
-        uses: "google-github-actions/auth@v1"
-        with:
-          credentials_json: "${{ secrets.GOOGLE_CREDENTIALS }}"
       - name: Checkout Repo
         uses: actions/checkout@master
       - name: Install Dependencies
@@ -43,7 +39,10 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           API_BASE_URL: ${{ env.API_BASE_URL }}
           GMAPS_API_KEY: ${{ secrets.FIREBASE_GMAPS_API_KEYAPP_ID }}
-
+      - id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.GOOGLE_CREDENTIALS }}"
       - name: Docker auth
         run: gcloud auth configure-docker ${{ env.ARTIFACT_REGISTRY }} --quiet
 
