@@ -43,6 +43,10 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           API_BASE_URL: ${{ env.API_BASE_URL }}
           GMAPS_API_KEY: ${{ secrets.FIREBASE_GMAPS_API_KEYAPP_ID }}
+
+      - name: "Docker auth"
+        run: gcloud auth configure-docker ${{ env.ARTIFACT_REGISTRY }} --quiet
+
       - name: Containerize
         run: |
           docker build --pull -t "${{ env.ARTIFACT_REGISTRY }}/${{ env.GOOGLE_PROJECT }}/${{ env.ARTIFACT_FOLDER }}/${{ env.APP_NAME }}:${{ env.TAG }}" .
