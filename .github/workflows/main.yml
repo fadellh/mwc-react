@@ -20,7 +20,7 @@ env:
 jobs:
   build:
     name: Build and Deploy to GKE
-    runs-on: [react-runner]
+    runs-on: [github-runner-fe]
     steps:
       - uses: actions/checkout@v3
       - id: "auth"
@@ -47,6 +47,19 @@ jobs:
         run: |
           docker build --pull -t "${{ env.ARTIFACT_REGISTRY }}/${{ env.GOOGLE_PROJECT }}/${{ env.ARTIFACT_FOLDER }}/${{ env.APP_NAME }}:${{ env.TAG }}" .
           docker push "${{ env.ARTIFACT_REGISTRY }}/${{ env.GOOGLE_PROJECT }}/${{ env.ARTIFACT_FOLDER }}/${{ env.APP_NAME }}:${{ env.TAG }}"
+
+  deploy:
+    name: Deploy to GKE
+    runs-on: [react-runner]
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      - id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.GOOGLE_CREDENTIALS }}"
+      - name: Checkout Repo
+        uses: actions/checkout@master
       - name: Deploy to GKE
         run: |
           kubectl apply -f infrastructure/kubernetes/application-deployment.yml
