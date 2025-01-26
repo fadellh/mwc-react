@@ -20,6 +20,7 @@ import {
   removeProductSuccess,
   searchProductSuccess
 } from '../actions/productActions';
+import apiService from '@/services/mwcApi';
 
 function* initRequest() {
   yield put(setLoading(true));
@@ -43,19 +44,20 @@ function* productSaga({ type, payload }) {
       try {
         yield initRequest();
         const state = yield select();
-        const result = yield call(firebase.getProducts, payload);
+        
+        const result = yield call(apiService.getProducts, payload);
+        console.log('<<< result', result);
 
-        if (result.products.length === 0) {
-          handleError('No items found.');
+        if (!result.products || result.products.length === 0) {
+          yield handleError('No items found.');
         } else {
           yield put(getProductsSuccess({
             products: result.products,
-            lastKey: result.lastKey ? result.lastKey : state.products.lastRefKey,
-            total: result.total ? result.total : state.products.total
+            lastKey: result.lastKey ?? state.products.lastRefKey,
+            total: result.total ?? state.products.total
           }));
           yield put(setRequestStatus(''));
         }
-        // yield put({ type: SET_LAST_REF_KEY, payload: result.lastKey });
         yield put(setLoading(false));
       } catch (e) {
         console.log(e);

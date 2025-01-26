@@ -18,6 +18,7 @@ import { setAuthenticating, setAuthStatus } from '@/redux/actions/miscActions';
 import { clearProfile, setProfile } from '@/redux/actions/profileActions';
 import { history } from '@/routers/AppRouter';
 import firebase from '@/services/firebase';
+import api from '@/services/mwcApi';
 
 function* handleError(e) {
   const obj = { success: false, type: 'auth', isError: true };
@@ -56,6 +57,9 @@ function* authSaga({ type, payload }) {
       try {
         yield initRequest();
         yield call(firebase.signIn, payload.email, payload.password);
+        
+        const idToken = yield call([firebase, firebase.getCurrentUserToken]);
+
       } catch (e) {
         yield handleError(e);
       }
@@ -102,7 +106,9 @@ function* authSaga({ type, payload }) {
           dateJoined: ref.user.metadata.creationTime || new Date().getTime()
         };
 
-        yield call(firebase.addUser, ref.user.uid, user);
+        yield call(api.createUser, user.email, user.fullname);
+        const idToken = yield call([firebase, firebase.getCurrentUserToken]);
+
         yield put(setProfile(user));
         yield put(setAuthenticating(false));
       } catch (e) {
@@ -141,20 +147,20 @@ function* authSaga({ type, payload }) {
       break;
     }
     case ON_AUTHSTATE_SUCCESS: {
-      const snapshot = yield call(firebase.getUser, payload.uid);
+      const snapshot = yield call(api.getUser, payload.email);
 
-      if (snapshot.data()) { // if user exists in database
-        const user = snapshot.data();
-
+      const user = snapshot.data;
+      if (user) {
         yield put(setProfile(user));
-        yield put(setBasketItems(user.basket));
-        yield put(setBasketItems(user.basket));
+        yield put(setBasketItems(user?.basket));
+        yield put(setBasketItems(user?.basket));
         yield put(signInSuccess({
           id: payload.uid,
           role: user.role,
           provider: payload.providerData[0].providerId
         }));
-      } else if (payload.providerData[0].providerId !== 'password' && !snapshot.data()) {
+      } 
+      else if (payload.providerData[0].providerId !== 'password' && !snapshot.data) {
         // add the user if auth provider is not password
         const user = {
           fullname: payload.displayName ? payload.displayName : 'User',
@@ -167,7 +173,7 @@ function* authSaga({ type, payload }) {
           role: 'USER',
           dateJoined: payload.metadata.creationTime
         };
-        yield call(firebase.addUser, payload.uid, user);
+        yield call(api.createUser, payload.uid, user);
         yield put(setProfile(user));
         yield put(signInSuccess({
           id: payload.uid,

@@ -1,15 +1,15 @@
 /* eslint-disable react/forbid-prop-types */
 /* eslint-disable no-nested-ternary */
-import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ArrowRightOutlined, CheckOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Boundary } from '@/components/common';
 import { CHECKOUT_STEP_1, CHECKOUT_STEP_3 } from '@/constants/routes';
 import { Form, Formik } from 'formik';
 import { useDocumentTitle, useScrollTop } from '@/hooks';
 import PropType from 'prop-types';
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { setShippingDetails } from '@/redux/actions/checkoutActions';
+import { setShippingDetails, createOrder } from '@/redux/actions/checkoutActions';
 import * as Yup from 'yup';
 import { StepTracker } from '../components';
 import withCheckout from '../hoc/withCheckout';
@@ -38,17 +38,23 @@ const FormSchema = Yup.object().shape({
   isDone: Yup.boolean()
 });
 
-const ShippingDetails = ({ profile, shipping, subtotal }) => {
-  useDocumentTitle('Check Out Step 2 | Salinaka');
+const ShippingDetails = ({ profile, shipping, basket, subtotal }) => {
+  useDocumentTitle('Check Out Step 2 | MWC');
   useScrollTop();
   const dispatch = useDispatch();
   const history = useHistory();
 
+  const { isLoading } = useSelector((state) => ({
+    isLoading: state.app.loading
+  }));
+
   const initFormikValues = {
+    customerId: profile.customerId || '',
     fullname: shipping.fullname || profile.fullname || '',
     email: shipping.email || profile.email || '',
     address: shipping.address || profile.address || '',
     mobile: shipping.mobile || profile.mobile || {},
+    location: shipping.location || {},
     isInternational: shipping.isInternational || false,
     isDone: shipping.isDone || false
   };
@@ -59,10 +65,19 @@ const ShippingDetails = ({ profile, shipping, subtotal }) => {
       email: form.email,
       address: form.address,
       mobile: form.mobile,
+      location: form.location,
       isInternational: form.isInternational,
       isDone: true
     }));
-    history.push(CHECKOUT_STEP_3);
+
+    dispatch(createOrder({
+      warehouseId: '536d8f43-ae20-4ed4-a317-b367c4b2943a',
+      customerId: form.customerId,
+      location: form.location,
+      basket: basket,
+    }))
+
+    // history.push(CHECKOUT_STEP_3);
   };
 
   return (
@@ -98,10 +113,11 @@ const ShippingDetails = ({ profile, shipping, subtotal }) => {
                   <button
                     className="button button-icon"
                     type="submit"
+                    disabled={isLoading}
                   >
-                    Next Step
-                    &nbsp;
-                    <ArrowRightOutlined />
+                    {isLoading ? <LoadingOutlined /> : <CheckOutlined />}
+                              &nbsp;
+                    {isLoading ? 'Ordering' : 'Order'}
                   </button>
                 </div>
               </Form>
@@ -126,6 +142,7 @@ ShippingDetails.propTypes = {
     email: PropType.string,
     address: PropType.string,
     mobile: PropType.object,
+    location: PropType.object,
     isInternational: PropType.bool,
     isDone: PropType.bool
   }).isRequired
