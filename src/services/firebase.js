@@ -26,9 +26,20 @@ class Firebase {
   // signInWithGoogle = () =>
   //   this.auth.signInWithPopup(new app.auth.GoogleAuthProvider());
 
+  getCurrentUserToken = async () => {
+    const user = this.auth.currentUser;
+    if (user) {
+      const token = await user.getIdToken()
+      return token
+    }
+    return null;
+  };
+
   signInWithGoogle = async () => {
     const provider = new app.auth.GoogleAuthProvider(); 
     try {
+      provider.addScope('profile');
+      provider.addScope('email');
       const result = await this.auth.signInWithPopup(provider);
 
       // Extract Google Access Token (for accessing Google APIs if needed)
@@ -95,8 +106,7 @@ class Firebase {
   getUser = (id) => {
     // Retrieve the JSON string from localStorage and parse it back into an object
     const user = localStorage.getItem(`user_${id}`);
-    console.log("<< User:", user);
-    return user ? JSON.parse(user) : null; // Return the parsed object or null if not found
+    return user
   };
 
   passwordUpdate = (password) => this.auth.currentUser.updatePassword(password);

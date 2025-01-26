@@ -3,6 +3,7 @@ const mwcConfig = {
   gmapsApiKey: import.meta.env.VITE_GMAPS_API_KEY,
   inventoryUrl: 'http://localhost:8081',
   orderUrl: 'http://localhost:8080',
+  userUrl: 'http://localhost:8083',
   useDummyCall: true,
 };
 
