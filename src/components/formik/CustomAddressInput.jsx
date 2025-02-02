@@ -58,7 +58,9 @@ const CustomAddressInput = (props) => {
         // disabled={true}
         color='black'
         className={`input-form ${touched['address'] && errors['address'] && 'input-error'}`}
-        value={defaultValue?.address}
+        // value={defaultValue?.address || ''}
+        value={field.value?.address || ''}
+        readOnly
         />
     </div>
   );

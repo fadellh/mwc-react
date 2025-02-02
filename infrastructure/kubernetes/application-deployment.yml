@@ -7,7 +7,7 @@ metadata:
   labels:
     app: toko
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: toko
@@ -18,10 +18,10 @@ spec:
     spec:
       containers:
         - name: toko
-          image: asia-southeast2-docker.pkg.dev/purwadika-441705/com-fns-wh-app-repository/toko:latest
+          image: asia-southeast2-docker.pkg.dev/purwadika-441705/com-fns-wh-app-repository/toko:latest-2
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8080
+            - containerPort: 80
           env:
             - name: API_BASE_URL
               value: "https://api.fadellh.com"
@@ -41,31 +41,31 @@ spec:
     app: toko
   ports:
     - name: toko-http
-      port: 8080
-      targetPort: 8080
+      port: 80
+      targetPort: 80
 
----
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: toko-hpa
-  namespace: default
-  labels:
-    app: toko
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: toko
-  minReplicas: 2
-  maxReplicas: 4
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 85
+# ---
+# apiVersion: autoscaling/v2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: toko-hpa
+#   namespace: default
+#   labels:
+#     app: toko
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: toko
+#   minReplicas: 2
+#   maxReplicas: 4
+#   metrics:
+#     - type: Resource
+#       resource:
+#         name: cpu
+#         target:
+#           type: Utilization
+#           averageUtilization: 85
 
 ---
 apiVersion: cert-manager.io/v1
@@ -111,4 +111,4 @@ spec:
               service:
                 name: toko
                 port:
-                  number: 8080
+                  number: 80

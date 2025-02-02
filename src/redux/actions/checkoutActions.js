@@ -1,6 +1,6 @@
 import {
   RESET_CHECKOUT, SET_CHECKOUT_PAYMENT_DETAILS, SET_CHECKOUT_SHIPPING_DETAILS, CREATE_ORDER, CREATE_ORDER_SUCCESS,
-  UPLOAD_PAYMENT, UPLOAD_PAYMENT_SUCCESS
+  UPLOAD_PAYMENT, UPLOAD_PAYMENT_SUCCESS, GET_SHIPPING_COST
 } from '@/constants/constants';
 
 export const setShippingDetails = (details) => ({
@@ -10,6 +10,11 @@ export const setShippingDetails = (details) => ({
 
 export const createOrder = (details) => ({
   type: CREATE_ORDER,
+  payload: details
+});
+
+export const getShippingCost = (details) => ({
+  type: GET_SHIPPING_COST,
   payload: details
 });
 

@@ -87,7 +87,6 @@ const Payment = ({ shipping, payment, subtotal, order }) => {
     } else if (form.type === 'credit') {
       displayActionMessage('Processing credit card payment...');
     } else if (form.type === 'upload') {
-      console.log('<<<', form.orderId, form.paymentProof)
       dispatch(uploadPayment({
         orderId: form.orderId,
         paymentProof: form.paymentProof,

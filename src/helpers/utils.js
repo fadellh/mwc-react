@@ -15,7 +15,7 @@ export const displayDate = (timestamp) => {
   return `${monthNames[monthIndex]} ${day}, ${year}`;
 };
 
-export const displayMoney = (n) => {
+export const displayMoneyIdr = (n) => {
   // change to integer
   n = parseInt(n, 10);
 
@@ -25,7 +25,20 @@ export const displayMoney = (n) => {
     currency: 'IDR',
     minimumFractionDigits: 0
   });
+  
+  return format.format(n);
+};
 
+export const displayMoney = (n) => {
+  // Convert to integer
+  n = parseInt(n, 10);
+
+  // Currency formatting for US Dollars
+  const format = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2, // Typically you want 2 decimal places for USD
+  });
 
   return format.format(n);
 };

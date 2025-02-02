@@ -5,10 +5,12 @@ import { uploadPayment } from '@/redux/actions/checkoutActions';
 import firebase from '@/services/firebase';
 import { getUser } from '@/redux/actions/userActions';
 
+
 // BASE_URL
 const API = axios.create({
   headers: {
     'Content-Type': 'application/json',
+    'X-API-Key': config.gatewayApiKey,
   },
   baseURL: config.apiBaseUrl,
 });
@@ -40,7 +42,11 @@ ORDER_API.interceptors.request.use(
 );
 
 const USER_API = axios.create({
-  baseURL: config.userUrl
+  baseURL: config.userUrl,
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': config.gatewayApiKey,
+  },
 })
 
 const apiService = {
@@ -48,6 +54,11 @@ const apiService = {
     const response = await API.get('/v1/inventory/products', {
       params: { lastRefKey }
     });
+
+    for (let i = 0; i < response.data.products.length; i++) {
+      response.data.products[i].image = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbYEfHfBCWleyU6BSpGgHz8E97mhC4nJo5pw&s";
+    }
+
     return response.data;
   },
   getFeaturedProducts: async() =>{
@@ -88,32 +99,38 @@ const apiService = {
         'Content-Type': 'application/json',
       },
     });
+
     return response.data;
+  },
+    previewShippingCost: async (payload) => {
+      if (config.useDummyCall) {
+        return apiService.previewShippingCostDummy(payload);
+      }
+      const response = await ORDER_API.post('/v1/orders/preview', payload, {
+        headers: {
+          'Accept': 'application/vnd.api.v1+json',
+          'Content-Type': 'application/json',
+        },
+      });
+      return response.data;
   },
   getUser: async (email) => {
     const response = await USER_API.post('/v1/users/verify', {
      email: email,
     });
 
-    console.log(response)
-
     return response;
 
   },
   createUser: async (email, fullname) => {
-    console.log("Creating user with email:", email, "and fullname:", fullname)
     const response = await USER_API.post('/v1/users/create', {
       email: email,
       fullname: fullname
     })
 
-    console.log(response)
-
     return response
   },
   createOrderDummy: async (apiPayload) => {
-    console.log("Payload received for order:", apiPayload);
-    
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 5000)); // 2-second delay
     
@@ -125,8 +142,6 @@ const apiService = {
     };
   },
   uploadPaymentDummy: async (payment) => {
-    console.log("Payment received:", payment);
-    
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 2000)); // 2-second delay
     
@@ -136,9 +151,28 @@ const apiService = {
       message: 'Payment uploaded successfully!'
     };
   },
+  previewShippingCostDummy: async (payload) => {
+    // Simulate network delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    return {
+      totalAmount: 580.0,
+      shippingCost: 0,
+      discount: 0,
+      items: [
+        {
+          productName: "Mizuno Phantom GT 97",
+          productId: payload?.items?.[0]?.productId || "dummy-product-id",
+          quantity: payload?.items?.[0]?.quantity || 0,
+          price: 290.0,
+          subTotal: 580.0,
+        },
+      ],
+      warehouseName: "Warehouse_Bandung_1290",
+      warehouseId: "f61ee532-f2a2-b27e-e682-a62df20cb7ca",
+    };
+  },
   getOrdersDummy: async () => {
-    console.log("Get for order");
-    
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1000)); // 2-second delay
     

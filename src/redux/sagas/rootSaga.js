@@ -4,6 +4,7 @@ import authSaga from './authSaga';
 import productSaga from './productSaga';
 import profileSaga from './profileSaga';
 import checkoutSaga from './checkoutSaga';
+import orderSaga from './orderSaga';
 
 function* rootSaga() {
   yield takeLatest([
@@ -33,6 +34,9 @@ function* rootSaga() {
   yield takeLatest([
     ACTION.CREATE_ORDER,
     ACTION.UPLOAD_PAYMENT
+  ], checkoutSaga);
+  yield takeLatest([
+    ACTION.GET_ORDERS,
   ], checkoutSaga);
 }
 

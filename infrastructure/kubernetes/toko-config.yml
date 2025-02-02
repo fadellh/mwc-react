@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: toko-config
+  namespace: default
+data:
+  VITE_FIREBASE_API_KEY: ""
+  VITE_FIREBASE_AUTH_DOMAIN: dti-purwa.firebaseapp.com
+  VITE_FIREBASE_DB_URL: https://dti-purwa-default-rtdb.asia-southeast1.firebasedatabase.app/
+  VITE_FIREBASE_PROJECT_ID: dti-purwa
+  VITE_FIREBASE_STORAGE_BUCKET: dti-purwa.firebasestorage.app
+  VITE_FIREBASE_MSG_SENDER_ID: "496534669997"
+  VITE_FIREBASE_APP_ID: ""
+  VITE_API_BASE_URL: https://api.fadellh.com
+  VITE_GMAPS_API_KEY: ""

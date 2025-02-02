@@ -49,13 +49,9 @@ class Firebase {
       // The signed-in user information
       const user = result.user;
 
-      console.log("Google Access Token:", token);
-      console.log("Signed-in User:", user);
-
       return { user, token }; 
     } catch (error) {
       // Handle errors
-      console.error("Google Sign-In Error:", error.message);
       throw error; 
     }
   };
