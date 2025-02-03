@@ -3,18 +3,20 @@
 import { ArrowLeftOutlined, ArrowRightOutlined, CheckOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Boundary } from '@/components/common';
 import { CHECKOUT_STEP_1, CHECKOUT_STEP_3 } from '@/constants/routes';
-import { Form, Formik } from 'formik';
-import { useDocumentTitle, useScrollTop } from '@/hooks';
+import { Form, Formik, useFormikContext } from 'formik';
+import { useDocumentTitle, useScrollTop, useShippingCost } from '@/hooks';
 import PropType from 'prop-types';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { setShippingDetails, createOrder } from '@/redux/actions/checkoutActions';
 import * as Yup from 'yup';
-import { StepTracker } from '../components';
+// import { StepTracker } from '../components';
+import StepTracker from '../components/StepTracker';
 import withCheckout from '../hoc/withCheckout';
 import ShippingForm from './ShippingForm';
 import ShippingTotal from './ShippingTotal';
+
 
 const FormSchema = Yup.object().shape({
   fullname: Yup.string()
@@ -24,8 +26,10 @@ const FormSchema = Yup.object().shape({
   email: Yup.string()
     .email('Email is not valid.')
     .required('Email is required.'),
-  address: Yup.string()
-    .required('Shipping address is required.'),
+  address: Yup.object().shape({
+    city: Yup.string(),
+    street: Yup.string(),
+  }).required('Address is required.'),
   mobile: Yup.object()
     .shape({
       country: Yup.string(),
@@ -38,6 +42,59 @@ const FormSchema = Yup.object().shape({
   isDone: Yup.boolean()
 });
 
+
+const ShippingCostUpdater = ({ basket }) => {
+  const { values, setFieldValue } = useFormikContext();
+  const { shippingCostData, fetchShippingCost, isLoading, error } = useShippingCost();
+  let isMounted = true; // local flag to track mounting status
+
+  console.log('StepTracker:', StepTracker);
+
+  useEffect(() => {
+    if (
+      values.location &&
+      typeof values.location === 'object' &&
+      values.location.address &&
+      values.location.latitude &&
+      values.location.longitude
+    ) {
+      const items = basket.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+      const payload = {
+        customerId: values.customerId,
+        items: items,
+        address: {
+          street: values.location.address,
+          city: values.location.address,
+          state: values.location.address,
+          zipCode: "10101",
+          latitude: values.location.latitude,
+          longitude: values.location.longitude
+        }
+      };
+
+      fetchShippingCost(payload);
+    }
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, [JSON.stringify(values.location), values.customerId, JSON.stringify(basket), fetchShippingCost]);
+
+  useEffect(() => {
+    if (shippingCostData && shippingCostData.shippingCost !== undefined && isMounted) {
+      setFieldValue('shippingFee', shippingCostData.shippingCost);
+      setFieldValue('warehouseId', shippingCostData.warehouseId);
+    }
+  }, [shippingCostData, setFieldValue]);
+
+  return <div className="shipping-cost-info">{/* Your UI logic here */}</div>;
+};
+
 const ShippingDetails = ({ profile, shipping, basket, subtotal }) => {
   useDocumentTitle('Check Out Step 2 | MWC');
   useScrollTop();
@@ -48,6 +105,15 @@ const ShippingDetails = ({ profile, shipping, basket, subtotal }) => {
     isLoading: state.app.loading
   }));
 
+
+  useEffect(() => {
+    if (shipping.location) {
+      
+    }
+
+  }, [dispatch, shipping.location]);
+  
+
   const initFormikValues = {
     customerId: profile.customerId || '',
     fullname: shipping.fullname || profile.fullname || '',
@@ -56,6 +122,8 @@ const ShippingDetails = ({ profile, shipping, basket, subtotal }) => {
     mobile: shipping.mobile || profile.mobile || {},
     location: shipping.location || {},
     isInternational: shipping.isInternational || false,
+    shippingFee: shipping.shippingFee || 0,
+    warehouseId: shipping.warehouseId || '',
     isDone: shipping.isDone || false
   };
 
@@ -66,12 +134,12 @@ const ShippingDetails = ({ profile, shipping, basket, subtotal }) => {
       address: form.address,
       mobile: form.mobile,
       location: form.location,
-      isInternational: form.isInternational,
+      isInternational: false,
       isDone: true
     }));
 
     dispatch(createOrder({
-      warehouseId: '536d8f43-ae20-4ed4-a317-b367c4b2943a',
+      warehouseId: form.warehouseId,
       customerId: form.customerId,
       location: form.location,
       basket: basket,
@@ -95,9 +163,12 @@ const ShippingDetails = ({ profile, shipping, basket, subtotal }) => {
             {() => (
               <Form>
                 <ShippingForm />
+                <ShippingCostUpdater basket={basket} />
                 <br />
                 {/*  ---- TOTAL --------- */}
-                <ShippingTotal subtotal={subtotal} />
+                <ShippingTotal 
+                  subtotal={subtotal}  
+                />
                 <br />
                 {/*  ----- NEXT/PREV BUTTONS --------- */}
                 <div className="checkout-shipping-action">
@@ -134,13 +205,13 @@ ShippingDetails.propTypes = {
   profile: PropType.shape({
     fullname: PropType.string,
     email: PropType.string,
-    address: PropType.string,
+    address: PropType.object,
     mobile: PropType.object
   }).isRequired,
   shipping: PropType.shape({
     fullname: PropType.string,
     email: PropType.string,
-    address: PropType.string,
+    address: PropType.object,
     mobile: PropType.object,
     location: PropType.object,
     isInternational: PropType.bool,

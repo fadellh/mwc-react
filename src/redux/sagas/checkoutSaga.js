@@ -44,7 +44,6 @@ function* checkoutSaga({ type, payload }) {
 
         yield call(displayActionMessage, 'Order placed successfully!', 'success');
       } catch (e) {
-        console.log(e.message);
         // yield put(checkoutFailure(e.message));
         yield put(setLoading(false));
         yield call(displayActionMessage, 'Order placement failed. Please try again.', 'error');
@@ -55,11 +54,11 @@ function* checkoutSaga({ type, payload }) {
       try {
         yield put(setLoading(true));
         
-        console.log(payload)
-      
         const formData = new FormData();
         formData.append('paymentProofFile', payload.paymentProof);
         formData.append('orderId', payload.orderId);
+        console.log('PAYLOAD payment proof', payload.paymentProof);
+        console.log('PAYLOAD order ID', payload);
         
         yield call(displayActionMessage, 'Uploading your payment proof...', 'info')
         const response = yield call(api.uploadPayment, formData);
@@ -71,7 +70,6 @@ function* checkoutSaga({ type, payload }) {
         
         yield call(history.push, ACCOUNT);
       } catch (e) { 
-        console.log(e.message);
         yield put(setLoading(false));
         yield call(displayActionMessage, 'Payment upload failed. Please try again.', 'error');
       }

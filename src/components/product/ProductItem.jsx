@@ -45,7 +45,7 @@ const ProductItem = ({ product, isItemOnBasket, addToBasket }) => {
                 className="product-card-img"
                 src={product.image}
               />
-            ) : <Skeleton width="100%" height="90%" />}
+             ) : <Skeleton width="100%" height="90%" />}
           </div>
           <div className="product-details">
             <h5 className="product-card-name text-overflow-ellipsis margin-auto">

@@ -19,7 +19,7 @@ const OrderFeatured = ({ order }) => {
           <span className={`status ${order.orderStatus?.toLowerCase()}`}>
             {order.orderStatus ||<Skeleton width={80} />}
           </span>
-          <div className="price">Rp{order.totalPrice?.toLocaleString() || <Skeleton width={80}/>}</div>
+          <div className="price">${order.totalPrice?.toLocaleString() || <Skeleton width={80}/>}</div>
         </div>
       </div>
       </SkeletonTheme>

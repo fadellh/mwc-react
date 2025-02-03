@@ -1,16 +1,26 @@
-# Build stage
-FROM node:16-alpine AS builder
+# ----- Build Stage -----
+FROM --platform=linux/amd64 node:16-alpine AS builder
 WORKDIR /app
+
+# Copy package files and install dependencies
 COPY package.json yarn.lock ./
 RUN yarn install
+
+# Copy the entire source code and build the app using Vite
 COPY . .
 RUN yarn build
 
-# Production stage
-FROM node:16-alpine
-WORKDIR /app
-COPY --from=builder /app/package.json /app/yarn.lock ./
-RUN yarn install --production
-COPY --from=builder /app/dist ./dist
-ENV NODE_ENV=production
-CMD ["node", "dist/index.js"]
+# ----- Production Stage -----
+FROM --platform=linux/amd64 nginx:alpine
+
+# Remove the default Nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy your custom Nginx configuration into the container
+COPY default.conf /etc/nginx/conf.d/default.conf
+
+# Copy the production build output (from the builder stage) to Nginx’s web root
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
