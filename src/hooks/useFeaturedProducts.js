@@ -25,7 +25,7 @@ const useFeaturedProducts = (itemsCount) => {
         const items = [];
 
         docs.forEach((snap) => {
-          const data = snap.data();
+          const data = snap.data;
           items.push({ id: snap.ref.id, ...data });
         });
 

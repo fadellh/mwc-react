@@ -12,7 +12,7 @@ import CreditPayment from './CreditPayment';
 import PayPalPayment from './PayPalPayment';
 import UploadPayment from './UploadPayment';
 import Total from './Total';
-import useFileHandler from '@/hooks/useFileHandler';
+import { useFileHandler } from '@/hooks';
 import { useDispatch } from 'react-redux';
 import { uploadPayment } from '@/redux/actions/checkoutActions';
 

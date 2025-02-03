@@ -4,18 +4,18 @@ import { ArrowLeftOutlined, ArrowRightOutlined, CheckOutlined, LoadingOutlined }
 import { Boundary } from '@/components/common';
 import { CHECKOUT_STEP_1, CHECKOUT_STEP_3 } from '@/constants/routes';
 import { Form, Formik, useFormikContext } from 'formik';
-import { useDocumentTitle, useScrollTop } from '@/hooks';
+import { useDocumentTitle, useScrollTop, useShippingCost } from '@/hooks';
 import PropType from 'prop-types';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { setShippingDetails, createOrder } from '@/redux/actions/checkoutActions';
 import * as Yup from 'yup';
-import { StepTracker } from '../components';
+// import { StepTracker } from '../components';
+import StepTracker from '../components/StepTracker';
 import withCheckout from '../hoc/withCheckout';
 import ShippingForm from './ShippingForm';
 import ShippingTotal from './ShippingTotal';
-import useShippingCost from '@/hooks/useShippingCost';
 
 
 const FormSchema = Yup.object().shape({
@@ -45,62 +45,54 @@ const FormSchema = Yup.object().shape({
 
 const ShippingCostUpdater = ({ basket }) => {
   const { values, setFieldValue } = useFormikContext();
-  const { location, customerId } = values;
   const { shippingCostData, fetchShippingCost, isLoading, error } = useShippingCost();
+  let isMounted = true; // local flag to track mounting status
+
+  console.log('StepTracker:', StepTracker);
 
   useEffect(() => {
-    // Only trigger the API if address is complete
     if (
-      location &&
-      typeof location === 'object' &&
-      location.address &&
-      location.latitude &&
-      location.longitude
+      values.location &&
+      typeof values.location === 'object' &&
+      values.location.address &&
+      values.location.latitude &&
+      values.location.longitude
     ) {
-
-      let items = [];
-      for (let i = 0; i < basket.length; i++) {
-        items.push({
-          productId: basket[i].id,
-          quantity: basket[i].quantity,
-          price: basket[i].price,
-        });
-      }
-
+      const items = basket.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      }));
       const payload = {
-        customerId,
+        customerId: values.customerId,
         items: items,
         address: {
-          street: location.address,
-          city: location.address,
-          state: location.address,
+          street: values.location.address,
+          city: values.location.address,
+          state: values.location.address,
           zipCode: "10101",
-          latitude: location.latitude,
-          longitude: location.longitude
+          latitude: values.location.latitude,
+          longitude: values.location.longitude
         }
       };
 
       fetchShippingCost(payload);
     }
-    // Use a stringified version of the address to avoid unnecessary calls
-  }, [JSON.stringify(location), customerId, JSON.stringify(basket), fetchShippingCost]);
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, [JSON.stringify(values.location), values.customerId, JSON.stringify(basket), fetchShippingCost]);
 
   useEffect(() => {
-    if (shippingCostData && shippingCostData.shippingCost !== undefined) {
+    if (shippingCostData && shippingCostData.shippingCost !== undefined && isMounted) {
       setFieldValue('shippingFee', shippingCostData.shippingCost);
       setFieldValue('warehouseId', shippingCostData.warehouseId);
     }
   }, [shippingCostData, setFieldValue]);
 
-  return (
-    <div className="shipping-cost-info">
-      {/* {isLoading && <p>Calculating shipping cost...</p>}
-      {error && <p className="error">{error}</p>}
-      {shippingCostData && !isLoading && (
-        <p>Shipping Cost: {shippingCostData.shippingCost}</p>
-      )} */}
-    </div>
-  );
+  return <div className="shipping-cost-info">{/* Your UI logic here */}</div>;
 };
 
 const ShippingDetails = ({ profile, shipping, basket, subtotal }) => {
@@ -213,7 +205,7 @@ ShippingDetails.propTypes = {
   profile: PropType.shape({
     fullname: PropType.string,
     email: PropType.string,
-    address: PropType.string,
+    address: PropType.object,
     mobile: PropType.object
   }).isRequired,
   shipping: PropType.shape({

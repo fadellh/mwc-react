@@ -57,6 +57,8 @@ function* checkoutSaga({ type, payload }) {
         const formData = new FormData();
         formData.append('paymentProofFile', payload.paymentProof);
         formData.append('orderId', payload.orderId);
+        console.log('PAYLOAD payment proof', payload.paymentProof);
+        console.log('PAYLOAD order ID', payload);
         
         yield call(displayActionMessage, 'Uploading your payment proof...', 'info')
         const response = yield call(api.uploadPayment, formData);

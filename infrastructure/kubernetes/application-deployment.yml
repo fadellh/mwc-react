@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
         - name: toko
-          image: asia-southeast2-docker.pkg.dev/purwadika-441705/com-fns-wh-app-repository/toko:latest-2
-          imagePullPolicy: IfNotPresent
+          image: asia-southeast2-docker.pkg.dev/purwadika-441705/com-fns-wh-app-repository/toko:build-132
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           env:

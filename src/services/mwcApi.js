@@ -15,19 +15,23 @@ const API = axios.create({
   baseURL: config.apiBaseUrl,
 });
 
-API.interceptors.request.use(
-  async (requestConfig) => {
-    const token = await firebase.getCurrentUserToken();
-    if (token) {
-      requestConfig.headers.Authorization = `Bearer ${token}`;
-    }
-    return requestConfig;
-  },
-  (error) => Promise.reject(error)
-);
+// API.interceptors.request.use(
+//   async (requestConfig) => {
+//     const token = await firebase.getCurrentUserToken();
+//     if (token) {
+//       requestConfig.headers.Authorization = `Bearer ${token}`;
+//     }
+//     return requestConfig;
+//   },
+//   (error) => Promise.reject(error)
+// );
 
 const ORDER_API = axios.create({
   baseURL: config.orderUrl,
+});
+
+const PAYMENT_API = axios.create({
+  baseURL: config.payUrl,
 });
 
 ORDER_API.interceptors.request.use(
@@ -63,12 +67,12 @@ const apiService = {
   },
   getFeaturedProducts: async() =>{
     const response = await API.get('/v1/inventory/products');
-    return response.data;
+    return response;
   },
     
   getRecommendedProducts: async () =>{
     const response = await API.get('/v1/inventory/products');
-    return response.data;
+    return response;
   },
   createOrder: async (order) => {
     if (config.useDummyCall) {
@@ -81,11 +85,8 @@ const apiService = {
     if (config.useDummyCall) {
       return apiService.uploadPaymentDummy(paymentFormData);
     }
-    const response = await ORDER_API.post('/v1/orders/payment', paymentFormData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    // Do NOT set a Content-Type header manually; axios will do this automatically.
+    const response = await PAYMENT_API.post('/v1/orders/payment', paymentFormData);
     return response.data;
   },
   getOrders: async (orderId, userId) => {
